@@ -1,0 +1,52 @@
+Model File :
+
+
+namespace org.dbs.voting
+
+participant voter identified by voterID {
+  o String voterID
+  o String fullName
+}
+
+asset ifVoted identified by voterID {
+  o String voterID
+  o Boolean votedOrNot
+}
+
+asset candidateVote identified by politicalParty {
+  o String politicalParty
+  o Integer totalVote
+}
+transaction vote {
+  --> candidateVote candidateVoteAsset
+  --> ifVoted ifVotedAsset
+}
+
+
+Script File :
+
+'use strict';
+
+/*
+  Sample transaction
+  @param {org.dbs.voting.vote} vote
+  @transaction
+ */
+function vote(tx) {
+    if (!tx.ifVotedAsset.votedOrNot) {
+        tx.candidateVoteAsset.totalVote = tx.candidateVoteAsset.totalVote + 1;
+        return getAssetRegistry('org.dbs.voting.candidateVote')
+            .then(function (assetRegistry) {
+                return assetRegistry.update(tx.candidateVoteAsset);
+            })
+            .then(function () {
+                return getAssetRegistry('org.dbs.voting.ifVoted')
+                    .then(function (assetRegistry) {
+                        tx.ifVotedAsset.votedOrNot = true;
+                        return assetRegistry.update(tx.ifVotedAsset);
+                    })
+            });
+    } else {
+        throw new Error('Vote already submitted!');
+    }
+}
