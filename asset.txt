@@ -1,0 +1,57 @@
+
+
+Model :
+
+
+namespace org.dbs.assettransfer
+
+asset LandTitle identified by titleId {
+  o String   titleId
+  --> Person   owner
+  o String   information
+  o Boolean  forSale   optional
+}
+
+
+participant Person identified by personId {
+  o String personId
+  o String firstName
+  o String lastName
+}
+
+
+transaction RegisterPropertyForSale {
+  --> Person seller
+  --> LandTitle title
+}
+
+transaction sellProperty{
+  --> Person buyer
+  --> Person seller
+  --> LandTitle title
+}
+
+
+
+
+
+
+Script :
+
+/* global getAssetRegistry */
+
+'use strict';
+/**
+ * Process a property that is held for sale
+ * @param {org.dbs.assettransfer.RegisterPropertyForSale} propertyForSale the property to be sold
+ * @transaction
+ */
+async function onRegisterPropertyForSale(propertyForSale) {   // eslint-disable-line no-unused-vars
+    console.log('### onRegisterPropertyForSale ' + propertyForSale.toString());
+    propertyForSale.title.forSale = true;
+
+    const registry = await getAssetRegistry('org.dbs.assettransfer.LandTitle');
+    await registry.update(propertyForSale.title);
+}
+
+
