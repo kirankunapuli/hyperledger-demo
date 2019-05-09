@@ -54,4 +54,17 @@ async function onRegisterPropertyForSale(propertyForSale) {   // eslint-disable-
     await registry.update(propertyForSale.title);
 }
 
-
+/**
+ * Process a property that is held for sale
+ * @param {org.dbs.assettransfer.sellProperty} sell the property to be sold
+ * @transaction
+ */
+async function sellProperty(sell){
+  if(sell.title.forSale){
+    sell.title.owner=sell.buyer
+  const registry = await getAssetRegistry('org.dbs.assettransfer.LandTitle');
+    await registry.update(sell.title);
+  }else{
+     throw new Error('Property not for sale')
+  }
+}
